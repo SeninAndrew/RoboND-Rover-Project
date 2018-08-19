@@ -1,13 +1,14 @@
 import numpy as np
-import math
 
-
+# The function checks whether or not the rover is at the same positions as 10
+# frames ago. If it does not move - we might want to decide to rotate.
 def is_same_position(Rover):
     if (len(Rover.last_positions) >= 10):
         pos_a = Rover.last_positions[0]
         pos_b = Rover.last_positions[9]
 
-        diff = math.sqrt((pos_a[0] - pos_b[0])*(pos_a[0] - pos_b[0]) + (pos_a[1] - pos_b[1])*(pos_a[1] - pos_b[1]))
+        diff = np.sqrt((pos_a[0] - pos_b[0])*(pos_a[0] - pos_b[0]) + 
+                       (pos_a[1] - pos_b[1])*(pos_a[1] - pos_b[1]))
         return diff < 1
 
 # This is where you can build a decision tree for determining throttle, brake and steer 
@@ -21,7 +22,6 @@ def decision_step(Rover):
     # Check if we have vision data to make decisions with
     if Rover.nav_angles is not None:
         # Check for Rover.mode status
-        # print("Rover.mode: ", Rover.mode)
         if Rover.mode == 'forward': 
             # Check the extent of navigable terrain
             if len(Rover.nav_angles) >= Rover.stop_forward:  
@@ -52,10 +52,6 @@ def decision_step(Rover):
 
         # If we're already in "stop" mode then make different decisions
         elif Rover.mode == 'stop' or Rover.complete_stuck:
-            # print("Rover.mode: ", Rover.mode)
-            # print("Rover.vel: ", Rover.vel)
-            # print("len(Rover.nav_angles): ", len(Rover.nav_angles))
-            # print("Rover.go_forward: ", Rover.go_forward)
             # If we're in stop mode but still moving keep braking
             if Rover.vel > 0.2:
                 Rover.throttle = 0
@@ -65,13 +61,11 @@ def decision_step(Rover):
             elif Rover.vel <= 0.2:
                 # Now we're stopped and we have vision data to see if there's a path forward
                 if len(Rover.nav_angles) < Rover.go_forward or Rover.complete_stuck:
-                    # print("Sending steer -15")
                     Rover.throttle = 0
                     # Release the brake to allow turning
                     Rover.brake = 0
                     # Turn range is +/- 15 degrees, when stopped the next line will induce 4-wheel turning
                     Rover.steer = -15 # Could be more clever here about which way to turn
-
                     Rover.stuck_counter = 0
                     Rover.complete_stuck = False
                 # If we're stopped but see sufficient navigable terrain in front then go!
