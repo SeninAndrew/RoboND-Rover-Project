@@ -4,6 +4,7 @@ from PIL import Image
 from io import BytesIO, StringIO
 import base64
 import time
+import rock_pickup
 
 # Define a function to convert telemetry strings to float independent of decimal convention
 def convert_to_float(string_to_convert):
@@ -53,14 +54,24 @@ def update_rover(Rover, data):
       # Update number of rocks collected
       Rover.samples_collected = Rover.samples_to_find - np.int(data["sample_count"])
 
-      print('speed =',Rover.vel, 'position =', Rover.pos, 'throttle =', 
-      Rover.throttle, 'steer_angle =', Rover.steer, 'near_sample:', Rover.near_sample, 
-      'picking_up:', data["picking_up"], 'sending pickup:', Rover.send_pickup, 
-      'total time:', Rover.total_time, 'samples remaining:', data["sample_count"], 
-      'samples_located: ', Rover.samples_located,
-      'samples collected:', Rover.samples_collected, 'mode:', Rover.mode, 
-      'stuck: ', Rover.complete_stuck, 'stuck_counter: ', Rover.stuck_counter, 
-      'manuever_flag:', Rover.manuever_flag)
+      target_pos = [0, 0]
+      if (len(Rover.rock_target_pos) == 2):
+          target_pos = Rover.rock_target_pos
+      
+      print('V: ', "%7.2f"%(Rover.vel), 
+            'P: ', "(%7.2f, %7.2f)"%(Rover.pos[0], Rover.pos[1]), 
+            'T: ', "%7.2f"%(Rover.throttle), 
+            'S: ', "%7.2f"%(Rover.steer), 
+            'N: ', Rover.near_sample, 
+            'PU: ', data["picking_up"], 
+            'SEP: ', "%1.1s"%(Rover.send_pickup), 
+            'M: ', "%1.1s"%(Rover.mode), 
+            'ST: ', "%1.1s"%(Rover.complete_stuck), 
+            'STC: ', "%4.4i"%(Rover.stuck_counter), 
+            'PF: ', "%1.1s"%(Rover.rock_pickup_flag), 
+            'Y: ', "%7.2f"%(Rover.yaw),
+            'YT: ', "%7.2f"%(rock_pickup.yaw_to_target(Rover)),
+            'RTP: ', "(%7.2f, %7.2f)"%(target_pos[0], target_pos[1]))
       # Get the current image from the center camera of the rover
       imgString = data["image"]
       image = Image.open(BytesIO(base64.b64decode(imgString)))

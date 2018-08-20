@@ -77,7 +77,6 @@ def find_rocks(img, levels=(100,100,60)):
               & (img[:,:,2]<levels[2]))
     
     color_select = np.zeros_like(img[:,:,0])
-    #print(color_select[rockpix])
     color_select[rockpix] = 1
     
     return color_select

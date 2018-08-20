@@ -18,7 +18,7 @@ import matplotlib.image as mpimg
 import time
 
 # Import functions for perception and decision making
-from manuever import rock_manuever
+from rock_pickup import rock_pickup
 from perception import perception_step
 from decision import decision_step
 from supporting_functions import update_rover, create_output_images
@@ -82,10 +82,11 @@ class RoverState():
         self.rock_dist = 0 #will be set to distance from rock in perception.py
         self.rock_ang = np.array([])#will be set to angle from rock in perception.py
         self.rock_target_yaw = 0
+        self.rock_target_pos = []
         self.rock_stop_forward = 70 #stopping distance to stop in front of rock for pick
 
         self.no_rock_counter = 0
-        self.manuever_flag = False
+        self.rock_pickup_flag = False
 
         self.stuck_counter = 0
         self.complete_stuck = False
@@ -115,7 +116,7 @@ def telemetry(sid, data):
         fps = frame_counter
         frame_counter = 0
         second_counter = time.time()
-    print("Current FPS: {}".format(fps))
+#     print("Current FPS: {}".format(fps))
 
     if data:
         global Rover
@@ -126,13 +127,11 @@ def telemetry(sid, data):
 
             Rover = perception_step(Rover)
             # Execute the perception and decision steps to update the Rover's state
-            if len(Rover.rock_ang) != 0 or Rover.manuever_flag:             
-                Rover = rock_manuever(Rover)
-                # if Rover.vel == 0:
-                #     Rover = rover_stuck(Rover)
+            if len(Rover.rock_ang) != 0 or Rover.rock_pickup_flag:             
+                Rover = rock_pickup(Rover)
             else:
                 if Rover.mode == 'pickup':
-                    Rover.manuever_flag = False
+                    Rover.rock_pickup_flag = False
                     Rover.mode = 'forward'
                 Rover = decision_step(Rover)
 
@@ -145,8 +144,11 @@ def telemetry(sid, data):
             # to send back new telemetry so we must only send one
             # back in respose to the current telemetry data.
 
-            # If in a state where want to pickup a rock send pickup command
-            if Rover.send_pickup and not Rover.picking_up and time.time() - Rover.pickup_sent_time > 60:
+            # If in a state where want to pickup a rock send pickup command.
+            # Added a time check to make sure the command is not sent too often
+            # (otherwise the simulator might hang)
+            if (Rover.send_pickup and not Rover.picking_up and 
+                    time.time() - Rover.pickup_sent_time > 60):
                 print('##met conditions to send pickup##')
                 print(Rover.send_pickup)
                 send_pickup()
