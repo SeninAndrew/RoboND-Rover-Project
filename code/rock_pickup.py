@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-# This function is based on 
+# This implementation of the rock pickup maneuver is based on 
 # https://github.com/jojobilly/Rover-Simulation
 
 def yaw_to_target(Rover):
