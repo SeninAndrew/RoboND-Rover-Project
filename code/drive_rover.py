@@ -85,7 +85,8 @@ class RoverState():
         self.rock_target_pos = []
         self.rock_stop_forward = 70 #stopping distance to stop in front of rock for pick
 
-        self.no_rock_counter = 0
+        self.no_rock_counter = 0 # number of iteration when the rock is no visible
+        self.no_rock_counter_threshold = 500 # threshold for number of iteration when the rock is not visible. After the threshold we give up trying to pick it up (until we see the rock again)
         self.rock_pickup_flag = False
 
         self.stuck_counter = 0

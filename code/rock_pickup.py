@@ -34,7 +34,7 @@ def rock_pickup(Rover):
         Rover.no_rock_counter += 1
         
         # In case we have not seen the rock for too long - give up trying. 
-        if Rover.no_rock_counter > 500:
+        if Rover.no_rock_counter > Rover.no_rock_counter_threshold:
             Rover.rock_pickup_flag = False
             Rover.no_rock_counter = 0
             
